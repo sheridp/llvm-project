@@ -89,7 +89,7 @@ static cl::opt<unsigned> PragmaUnrollAndJamThreshold(
 // "llvm.loop.unroll.count").  If no such metadata node exists, then nullptr is
 // returned.
 static MDNode *getUnrollMetadataForLoop(const Loop *L, StringRef Name) {
-  if (MDNode *LoopID = L->getLoopID())
+  if (MDNode *LoopID = L->getLoopMD())
     return GetUnrollMetadata(LoopID, Name);
   return nullptr;
 }
@@ -97,7 +97,7 @@ static MDNode *getUnrollMetadataForLoop(const Loop *L, StringRef Name) {
 // Returns true if the loop has any metadata starting with Prefix. For example a
 // Prefix of "llvm.loop.unroll." returns true if we have any unroll metadata.
 static bool hasAnyUnrollPragma(const Loop *L, StringRef Prefix) {
-  if (MDNode *LoopID = L->getLoopID()) {
+  if (MDNode *LoopID = L->getLoopMD()) {
     // First operand should refer to the loop id itself.
     assert(LoopID->getNumOperands() > 0 && "requires at least one operand");
     assert(LoopID->getOperand(0) == LoopID && "invalid loop id");
@@ -348,8 +348,8 @@ tryToUnrollAndJamLoop(Loop *L, DominatorTree &DT, LoopInfo *LI,
   }
 
   // Save original loop IDs for after the transformation.
-  MDNode *OrigOuterLoopID = L->getLoopID();
-  MDNode *OrigSubLoopID = SubLoop->getLoopID();
+  MDNode *OrigOuterLoopID = L->getLoopMD();
+  MDNode *OrigSubLoopID = SubLoop->getLoopMD();
 
   // To assign the loop id of the epilogue, assign it before unrolling it so it
   // is applied to every inner loop of the epilogue. We later apply the loop ID

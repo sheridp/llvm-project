@@ -498,7 +498,7 @@ bool Loop::isSafeToClone() const {
   return true;
 }
 
-MDNode *Loop::getLoopID() const {
+MDNode *Loop::getLoopMD() const {
   MDNode *LoopID = nullptr;
 
   // Go through the latch blocks and check the terminator for the metadata.
@@ -539,7 +539,7 @@ void Loop::setLoopAlreadyUnrolled() {
 
   MDNode *DisableUnrollMD =
       MDNode::get(Context, MDString::get(Context, "llvm.loop.unroll.disable"));
-  MDNode *LoopID = getLoopID();
+  MDNode *LoopID = getLoopMD();
   MDNode *NewLoopID = makePostTransformationMetadata(
       Context, LoopID, {"llvm.loop.unroll."}, {DisableUnrollMD});
   setLoopID(NewLoopID);
@@ -555,14 +555,14 @@ void Loop::setLoopMustProgress() {
 
   MDNode *MustProgressMD =
       MDNode::get(Context, MDString::get(Context, "llvm.loop.mustprogress"));
-  MDNode *LoopID = getLoopID();
+  MDNode *LoopID = getLoopMD();
   MDNode *NewLoopID =
       makePostTransformationMetadata(Context, LoopID, {}, {MustProgressMD});
   setLoopID(NewLoopID);
 }
 
 bool Loop::isAnnotatedParallel() const {
-  MDNode *DesiredLoopIdMetadata = getLoopID();
+  MDNode *DesiredLoopIdMetadata = getLoopMD();
 
   if (!DesiredLoopIdMetadata)
     return false;
@@ -632,7 +632,7 @@ DebugLoc Loop::getStartLoc() const { return getLocRange().getStart(); }
 
 Loop::LocRange Loop::getLocRange() const {
   // If we have a debug location in the loop ID, then use it.
-  if (MDNode *LoopID = getLoopID()) {
+  if (MDNode *LoopID = getLoopMD()) {
     DebugLoc Start;
     // We use the first DebugLoc in the header as the start location of the loop
     // and if there is a second DebugLoc in the header we use it as end location
@@ -1040,7 +1040,7 @@ MDNode *llvm::findOptionMDForLoopID(MDNode *LoopID, StringRef Name) {
 }
 
 MDNode *llvm::findOptionMDForLoop(const Loop *TheLoop, StringRef Name) {
-  return findOptionMDForLoopID(TheLoop->getLoopID(), Name);
+  return findOptionMDForLoopID(TheLoop->getLoopMD(), Name);
 }
 
 /// Find string metadata for loop

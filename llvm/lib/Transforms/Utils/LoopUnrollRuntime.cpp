@@ -438,7 +438,7 @@ CloneLoopBlocks(Loop *L, Value *NewIter, const bool UseEpilogRemainder,
 
   Loop *NewLoop = NewLoops[L];
   assert(NewLoop && "L should have been cloned");
-  MDNode *LoopID = NewLoop->getLoopID();
+  MDNode *LoopID = NewLoop->getLoopMD();
 
   // Only add loop metadata if the loop is not going to be completely
   // unrolled.

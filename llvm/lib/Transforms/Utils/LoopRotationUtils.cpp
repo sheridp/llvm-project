@@ -937,7 +937,7 @@ bool LoopRotate::simplifyLoopLatch(Loop *L) {
 /// Rotate \c L, and return true if any modification was made.
 bool LoopRotate::processLoop(Loop *L) {
   // Save the loop metadata.
-  MDNode *LoopMD = L->getLoopID();
+  MDNode *LoopMD = L->getLoopMD();
 
   bool SimplifiedLatch = false;
 

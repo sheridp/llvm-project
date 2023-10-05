@@ -92,7 +92,7 @@ public:
            LoopInfo *Parent);
 
   /// Get the loop id metadata for this loop.
-  llvm::MDNode *getLoopID() const { return TempLoopID.get(); }
+  llvm::MDNode *getLoopMD() const { return TempLoopMD.get(); }
 
   /// Get the header block of this loop.
   llvm::BasicBlock *getHeader() const { return Header; }
@@ -109,7 +109,7 @@ public:
 
 private:
   /// Loop ID metadata.
-  llvm::TempMDTuple TempLoopID;
+  llvm::TempMDTuple TempLoopMD;
   /// Header block of this loop.
   llvm::BasicBlock *Header;
   /// The attributes for this loop.
@@ -127,25 +127,25 @@ private:
   /// metadata.
   llvm::MDNode *UnrollAndJamInnerFollowup = nullptr;
 
-  /// Create a LoopID without any transformations.
+  /// Create a LoopMD without any transformations.
   llvm::MDNode *
   createLoopPropertiesMetadata(llvm::ArrayRef<llvm::Metadata *> LoopProperties);
 
-  /// Create a LoopID for transformations.
+  /// Create a LoopMD for transformations.
   ///
   /// The methods call each other in case multiple transformations are applied
-  /// to a loop. The transformation first to be applied will use LoopID of the
+  /// to a loop. The transformation first to be applied will use LoopMD of the
   /// next transformation in its followup attribute.
   ///
   /// @param Attrs             The loop's transformations.
   /// @param LoopProperties    Non-transformation properties such as debug
   ///                          location, parallel accesses and disabled
   ///                          transformations. These are added to the returned
-  ///                          LoopID.
+  ///                          LoopMD.
   /// @param HasUserTransforms [out] Set to true if the returned MDNode encodes
   ///                          at least one transformation.
   ///
-  /// @return A LoopID (metadata node) that can be used for the llvm.loop
+  /// @return A LoopMD (metadata node) that can be used for the llvm.loop
   ///         annotation or followup-attribute.
   /// @{
   llvm::MDNode *
@@ -174,17 +174,17 @@ private:
                            bool &HasUserTransforms);
   /// @}
 
-  /// Create a LoopID for this loop, including transformation-unspecific
+  /// Create a LoopMD for this loop, including transformation-unspecific
   /// metadata such as debug location.
   ///
   /// @param Attrs             This loop's attributes and transformations.
   /// @param LoopProperties    Additional non-transformation properties to add
-  ///                          to the LoopID, such as transformation-specific
+  ///                          to the LoopMD, such as transformation-specific
   ///                          metadata that are not covered by @p Attrs.
   /// @param HasUserTransforms [out] Set to true if the returned MDNode encodes
   ///                          at least one transformation.
   ///
-  /// @return A LoopID (metadata node) that can be used for the llvm.loop
+  /// @return A LoopMD (metadata node) that can be used for the llvm.loop
   ///         annotation.
   llvm::MDNode *createMetadata(const LoopAttributes &Attrs,
                                llvm::ArrayRef<llvm::Metadata *> LoopProperties,
@@ -217,7 +217,7 @@ public:
   void pop();
 
   /// Return the top loop id metadata.
-  llvm::MDNode *getCurLoopID() const { return getInfo().getLoopID(); }
+  llvm::MDNode *getCurLoopMD() const { return getInfo().getLoopMD(); }
 
   /// Return true if the top loop is parallel.
   bool getCurLoopParallel() const {

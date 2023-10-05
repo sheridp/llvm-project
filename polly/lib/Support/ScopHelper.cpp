@@ -793,13 +793,13 @@ isl::id polly::createIslLoopAttr(isl::ctx Ctx, Loop *L) {
     return {};
 
   // A loop without metadata does not need to be annotated.
-  MDNode *LoopID = L->getLoopID();
+  MDNode *LoopID = L->getLoopMD();
   if (!LoopID)
     return {};
 
   BandAttr *Attr = new BandAttr();
   Attr->OriginalLoop = L;
-  Attr->Metadata = L->getLoopID();
+  Attr->Metadata = L->getLoopMD();
 
   return getIslLoopAttr(Ctx, Attr);
 }

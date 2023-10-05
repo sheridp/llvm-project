@@ -25,12 +25,10 @@ MDNode *
 LoopInfo::createLoopPropertiesMetadata(ArrayRef<Metadata *> LoopProperties) {
   LLVMContext &Ctx = Header->getContext();
   SmallVector<Metadata *, 4> NewLoopProperties;
-  NewLoopProperties.push_back(nullptr);
   NewLoopProperties.append(LoopProperties.begin(), LoopProperties.end());
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, NewLoopProperties);
-  LoopID->replaceOperandWith(0, LoopID);
-  return LoopID;
+  MDNode *LoopMD = MDTuple::get(Ctx, NewLoopProperties);
+  return LoopMD;
 }
 
 MDNode *LoopInfo::createPipeliningMetadata(const LoopAttributes &Attrs,
@@ -58,7 +56,6 @@ MDNode *LoopInfo::createPipeliningMetadata(const LoopAttributes &Attrs,
   }
 
   SmallVector<Metadata *, 4> Args;
-  Args.push_back(nullptr);
   Args.append(LoopProperties.begin(), LoopProperties.end());
 
   if (Attrs.PipelineInitiationInterval > 0) {
@@ -71,10 +68,9 @@ MDNode *LoopInfo::createPipeliningMetadata(const LoopAttributes &Attrs,
 
   // No follow-up: This is the last transformation.
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, Args);
-  LoopID->replaceOperandWith(0, LoopID);
+  MDNode *LoopMD = MDTuple::get(Ctx, Args);
   HasUserTransforms = true;
-  return LoopID;
+  return LoopMD;
 }
 
 MDNode *
@@ -133,10 +129,9 @@ LoopInfo::createPartialUnrollMetadata(const LoopAttributes &Attrs,
     Args.push_back(MDNode::get(
         Ctx, {MDString::get(Ctx, "llvm.loop.unroll.followup_all"), Followup}));
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, Args);
-  LoopID->replaceOperandWith(0, LoopID);
+  MDNode *LoopMD = MDTuple::get(Ctx, Args);
   HasUserTransforms = true;
-  return LoopID;
+  return LoopMD;
 }
 
 MDNode *
@@ -174,7 +169,6 @@ LoopInfo::createUnrollAndJamMetadata(const LoopAttributes &Attrs,
                                                  FollowupHasTransforms);
 
   SmallVector<Metadata *, 4> Args;
-  Args.push_back(nullptr);
   Args.append(LoopProperties.begin(), LoopProperties.end());
 
   // Setting unroll_and_jam.count
@@ -201,10 +195,9 @@ LoopInfo::createUnrollAndJamMetadata(const LoopAttributes &Attrs,
         Ctx, {MDString::get(Ctx, "llvm.loop.unroll_and_jam.followup_inner"),
               UnrollAndJamInnerFollowup}));
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, Args);
-  LoopID->replaceOperandWith(0, LoopID);
+  MDNode *LoopMD = MDTuple::get(Ctx, Args);
   HasUserTransforms = true;
-  return LoopID;
+  return LoopMD;
 }
 
 MDNode *
@@ -248,7 +241,6 @@ LoopInfo::createLoopVectorizeMetadata(const LoopAttributes &Attrs,
                                                 FollowupHasTransforms);
 
   SmallVector<Metadata *, 4> Args;
-  Args.push_back(nullptr);
   Args.append(LoopProperties.begin(), LoopProperties.end());
 
   // Setting vectorize.predicate when it has been specified and vectorization
@@ -319,10 +311,9 @@ LoopInfo::createLoopVectorizeMetadata(const LoopAttributes &Attrs,
         Ctx,
         {MDString::get(Ctx, "llvm.loop.vectorize.followup_all"), Followup}));
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, Args);
-  LoopID->replaceOperandWith(0, LoopID);
+  MDNode *LoopMD = MDTuple::get(Ctx, Args);
   HasUserTransforms = true;
-  return LoopID;
+  return LoopMD;
 }
 
 MDNode *
@@ -356,7 +347,6 @@ LoopInfo::createLoopDistributeMetadata(const LoopAttributes &Attrs,
       createLoopVectorizeMetadata(Attrs, LoopProperties, FollowupHasTransforms);
 
   SmallVector<Metadata *, 4> Args;
-  Args.push_back(nullptr);
   Args.append(LoopProperties.begin(), LoopProperties.end());
 
   Metadata *Vals[] = {MDString::get(Ctx, "llvm.loop.distribute.enable"),
@@ -370,10 +360,9 @@ LoopInfo::createLoopDistributeMetadata(const LoopAttributes &Attrs,
         Ctx,
         {MDString::get(Ctx, "llvm.loop.distribute.followup_all"), Followup}));
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, Args);
-  LoopID->replaceOperandWith(0, LoopID);
+  MDNode *LoopMD = MDTuple::get(Ctx, Args);
   HasUserTransforms = true;
-  return LoopID;
+  return LoopMD;
 }
 
 MDNode *LoopInfo::createFullUnrollMetadata(const LoopAttributes &Attrs,
@@ -400,17 +389,15 @@ MDNode *LoopInfo::createFullUnrollMetadata(const LoopAttributes &Attrs,
   }
 
   SmallVector<Metadata *, 4> Args;
-  Args.push_back(nullptr);
   Args.append(LoopProperties.begin(), LoopProperties.end());
   Args.push_back(MDNode::get(Ctx, MDString::get(Ctx, "llvm.loop.unroll.full")));
 
   // No follow-up: there is no loop after full unrolling.
   // TODO: Warn if there are transformations after full unrolling.
 
-  MDNode *LoopID = MDNode::getDistinct(Ctx, Args);
-  LoopID->replaceOperandWith(0, LoopID);
+  MDNode *LoopMD = MDTuple::get(Ctx, Args);
   HasUserTransforms = true;
-  return LoopID;
+  return LoopMD;
 }
 
 MDNode *LoopInfo::createMetadata(
@@ -497,16 +484,16 @@ LoopInfo::LoopInfo(BasicBlock *Header, const LoopAttributes &Attrs,
       !EndLoc && !Attrs.MustProgress)
     return;
 
-  TempLoopID = MDNode::getTemporary(Header->getContext(), std::nullopt);
+  TempLoopMD = MDNode::getTemporary(Header->getContext(), std::nullopt);
 }
 
 void LoopInfo::finish() {
   // We did not annotate the loop body instructions because there are no
   // attributes for this loop.
-  if (!TempLoopID)
+  if (!TempLoopMD)
     return;
 
-  MDNode *LoopID;
+  MDNode *LoopMD;
   LoopAttributes CurLoopAttr = Attrs;
   LLVMContext &Ctx = Header->getContext();
 
@@ -580,8 +567,8 @@ void LoopInfo::finish() {
   }
 
   bool HasUserTransforms = false;
-  LoopID = createMetadata(CurLoopAttr, {}, HasUserTransforms);
-  TempLoopID->replaceAllUsesWith(LoopID);
+  LoopMD = createMetadata(CurLoopAttr, {}, HasUserTransforms);
+  TempLoopMD->replaceAllUsesWith(LoopMD);
 }
 
 void LoopInfoStack::push(BasicBlock *Header, const llvm::DebugLoc &StartLoc,
@@ -828,13 +815,13 @@ void LoopInfoStack::InsertHelper(Instruction *I) const {
     return;
 
   const LoopInfo &L = getInfo();
-  if (!L.getLoopID())
+  if (!L.getLoopMD())
     return;
 
   if (I->isTerminator()) {
     for (BasicBlock *Succ : successors(I))
       if (Succ == L.getHeader()) {
-        I->setMetadata(llvm::LLVMContext::MD_loop, L.getLoopID());
+        I->setMetadata(llvm::LLVMContext::MD_loop, L.getLoopMD());
         break;
       }
     return;

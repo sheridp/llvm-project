@@ -450,7 +450,7 @@ public:
            "preheader not empty");
 
     // Preserve the original loop ID for use after the transformation.
-    MDNode *OrigLoopID = L->getLoopID();
+    MDNode *OrigLoopID = L->getLoopMD();
 
     // Create a loop for each partition except the last.  Clone the original
     // loop before PH along with adding a preheader for the cloned loop.  Then
@@ -805,7 +805,7 @@ public:
     if (!Pred.isAlwaysTrue() || !Checks.empty()) {
       assert(!LAI->hasConvergentOp() && "inserting illegal loop versioning");
 
-      MDNode *OrigLoopID = L->getLoopID();
+      MDNode *OrigLoopID = L->getLoopMD();
 
       LLVM_DEBUG(dbgs() << "\nPointers:\n");
       LLVM_DEBUG(LAI->getRuntimePointerChecking()->printChecks(dbgs(), Checks));

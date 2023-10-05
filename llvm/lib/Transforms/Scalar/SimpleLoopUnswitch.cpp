@@ -3657,7 +3657,7 @@ PreservedAnalyses SimpleLoopUnswitchPass::run(Loop &L, LoopAnalysisManager &AM,
             Context,
             MDString::get(Context, "llvm.loop.unswitch.partial.disable"));
         MDNode *NewLoopID = makePostTransformationMetadata(
-            Context, L.getLoopID(), {"llvm.loop.unswitch.partial"},
+            Context, L.getLoopMD(), {"llvm.loop.unswitch.partial"},
             {DisableUnswitchMD});
         L.setLoopID(NewLoopID);
       } else if (InjectedCondition) {
@@ -3667,7 +3667,7 @@ PreservedAnalyses SimpleLoopUnswitchPass::run(Loop &L, LoopAnalysisManager &AM,
             Context,
             MDString::get(Context, "llvm.loop.unswitch.injection.disable"));
         MDNode *NewLoopID = makePostTransformationMetadata(
-            Context, L.getLoopID(), {"llvm.loop.unswitch.injection"},
+            Context, L.getLoopMD(), {"llvm.loop.unswitch.injection"},
             {DisableUnswitchMD});
         L.setLoopID(NewLoopID);
       } else
